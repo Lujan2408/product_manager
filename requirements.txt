@@ -1,0 +1,50 @@
+# Product Manager - Backend Dependencies
+# Latest stable versions as of June 2025
+
+# Core Framework
+fastapi==0.115.13
+uvicorn==0.34.3
+starlette==0.46.2
+
+# Database & ORM
+sqlmodel==0.0.24
+SQLAlchemy==2.0.41
+greenlet==3.2.3
+# psycopg2-binary==2.9.7  # Commented out - using SQLite instead
+
+# Data Validation & Serialization
+pydantic==2.11.7
+pydantic-settings==2.6.1
+typing_extensions==4.14.0
+typing-inspection==0.4.1
+
+# Security & Authentication
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.20
+email_validator==2.2.0
+
+# HTTP Client
+httpx==0.28.1
+
+# Testing
+pytest==8.2.2
+pytest-asyncio==0.24.0
+
+# Environment Management
+python-dotenv==1.1.1
+
+# Additional utilities
+python-dateutil==2.9.0
+
+# Development dependencies (optional)
+black==25.1.0
+isort==5.13.2
+flake8==7.1.1
+mypy==1.10.0
+
+# CLI & Development Tools
+fastapi-cli==0.0.7
+typer==0.16.0
+rich==14.0.0
+rich-toolkit==0.14.7 
