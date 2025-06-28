@@ -1,18 +1,8 @@
 from fastapi import FastAPI
+from app.api.main import router
 
-app = FastAPI(
-    title="Product Manager API",
-    description="A FastAPI backend for product management",
-    version="1.0.0"
-)
-
-@app.get("/")
-async def root():
-    return {"message": "Welcome to Product Manager API", "status": "running"}
-
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy", "service": "product-manager"}
+app = FastAPI()
+app.include_router(router, prefix="/api/v1")
 
 if __name__ == "__main__":
     import uvicorn
