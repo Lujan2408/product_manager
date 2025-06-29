@@ -3,10 +3,10 @@ from sqlmodel import Session, create_engine, SQLModel
 from app.core.config import settings  
 from fastapi import Depends, FastAPI
 from contextlib import asynccontextmanager
-import app.models as models
 from typing import Annotated
-
 from colorama import Fore, Style
+
+from app.models import *
 
 engine = create_engine(settings.SQLALCHEMY_DATABASE_URI, echo=True)
 
