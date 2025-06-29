@@ -6,13 +6,30 @@
 # 5. MUST NOT contain HTTP 
 
 from app.core.db import SessionDependency
+from app.models.products.product import Product
 from app.schemas.product import ProductCreate
+from sqlmodel import select
 
 class ProductService:
     def __init__(self, session: SessionDependency):
         self.session = session
 
     async def create_product(self, product_data: ProductCreate):
-        """Business logic for creating a product"""
-        # Business rules, validations, db operations, etc.
-        return {"message": "Creating product from services/product_service.py", "data": product_data}
+        # Data validation
+        if product_data.price <= 0: 
+            raise ValueError("Price must be greater than 0")
+        
+        # Check if a product already exists with the same name
+        existing_product = self.session.exec(select(Product).where(Product.name == product_data.name)).first()
+
+        if existing_product:
+            raise ValueError(f"Product with name {product_data.name} already exists")
+        
+        # Create the product
+        product_data_dict = product_data.model_dump()
+        product = Product(**product_data_dict)
+        self.session.add(product)
+        self.session.commit()
+        self.session.refresh(product)
+
+        return product
