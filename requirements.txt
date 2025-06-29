@@ -48,3 +48,6 @@ fastapi-cli==0.0.7
 typer==0.16.0
 rich==14.0.0
 rich-toolkit==0.14.7 
+
+# Colorama 
+colorama==0.4.6
