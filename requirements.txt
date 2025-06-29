@@ -10,7 +10,7 @@ starlette==0.46.2
 sqlmodel==0.0.24
 SQLAlchemy==2.0.41
 greenlet==3.2.3
-# psycopg2-binary==2.9.7  # Commented out - using SQLite instead
+psycopg2-binary 
 
 # Data Validation & Serialization
 pydantic==2.11.7
