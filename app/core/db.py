@@ -21,5 +21,3 @@ def get_session():
     yield session
 
 SessionDependency = Annotated[Session, Depends(get_session)]
-
-# postgresql://products_management_user:bv7p8MCpFjiQKITXJjzsRZ46pvR43dNR@dpg-d1g5tbvfte5s7389ksj0-a.virginia-postgres.render.com/products_management
