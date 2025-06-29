@@ -1,3 +1,8 @@
+# ✅ MODELS RESPONSIBILITIES:
+# 1. Define the database schema
+# 2. Define the relationships between tables
+# 3. CRUD with the database
+
 from sqlmodel import Field, SQLModel
 
 class Product(SQLModel, table=True): 

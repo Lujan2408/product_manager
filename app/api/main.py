@@ -1,13 +1,12 @@
 # Main router for the API
 
 from fastapi import APIRouter
+from app.api.routers import product
 
-router = APIRouter()
+api_router = APIRouter()
 
-@router.get("/")
+api_router.include_router(product.router, prefix="/products", tags=["Products"])
+
+@api_router.get("/")
 async def root():
-    return {"message": "Welcome to Product Manager API", "status": "running"}
-
-@router.get("/health")
-async def health_check():
-    return {"status": "healthy", "service": "product-manager"}
+  return {"message": "Hello from api/main.py"}
