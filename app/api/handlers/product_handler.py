@@ -10,7 +10,8 @@ from sqlmodel import select
 from app.core.db import AsyncSessionDependency
 from app.models.products.product import Product
 from app.services.product_service import ProductService
-from app.schemas.product import ProductCreate, ProductResponse
+from app.schemas.product import ProductCreate, ProductResponse, ProductUpdate
+from app.errors.product_errors import ProductNotFoundError, DuplicateProductNameError, NoFieldsToUpdateError
 
 async def create_product(product_data: ProductCreate, session: AsyncSessionDependency):
   try: 
@@ -66,3 +67,18 @@ async def get_product_by_id_handler(product_id: int, session: AsyncSessionDepend
   except Exception as e:
     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
     
+async def update_product_handler(product_id: int, product_data: ProductUpdate, session: AsyncSessionDependency):
+  try: 
+    service = ProductService(session)
+    product = await service.update_product(product_id, product_data)
+
+    return ProductResponse.model_validate(product).model_dump(exclude_unset=True)
+  
+  except ProductNotFoundError as e:
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+  except DuplicateProductNameError as e:
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+  except NoFieldsToUpdateError as e:
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+  except Exception as e:
+    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Unexpected error ocurred")

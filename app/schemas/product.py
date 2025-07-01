@@ -6,11 +6,12 @@
 # 5. MUST NOT interact with the database
 
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+from typing import Optional
 
 # Schema for creating a product (req)
 class ProductCreate(BaseModel):
-  name: str = Field(min_length=3, max_length=255, description="Product name")
+  name: str = Field(min_length=1, max_length=255, description="Product name")
   price: float = Field(gt=0, description="Product price")
   available: bool = Field(default=True, description="Product availability")
 
@@ -25,3 +26,14 @@ class ProductResponse(BaseModel):
   # The form_attributes allows the ORM (SQLModel) to convert the data from the database to the data of the response.
   class Config: 
     from_attributes = True
+
+class ProductUpdate(BaseModel):
+  name: Optional[str] = Field(default=None, min_length=1, max_length=255)
+  price: Optional[float] = Field(default=None, gt=0)
+  available: Optional[bool] = Field(default=None)
+
+  @field_validator("name")
+  def name_with_no_blank_spaces(cls, v):
+    if v is not None and v.strip() == "":
+      raise ValueError("Name cannot be blank")
+    return v

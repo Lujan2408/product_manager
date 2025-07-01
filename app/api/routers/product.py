@@ -10,9 +10,9 @@
 
 from fastapi import APIRouter, status
 from app.api.handlers.product_handler import create_product
-from app.api.handlers.product_handler import get_products_handler, get_product_by_id_handler
+from app.api.handlers.product_handler import get_products_handler, get_product_by_id_handler, update_product_handler
 from app.core.db import AsyncSessionDependency
-from app.schemas.product import ProductCreate, ProductResponse
+from app.schemas.product import ProductCreate, ProductResponse, ProductUpdate
 
 router = APIRouter()
 
@@ -27,3 +27,7 @@ async def get_products(session: AsyncSessionDependency):
 @router.get("/{product_id}", response_model=ProductResponse, status_code=status.HTTP_200_OK)
 async def get_product_by_id(product_id: int, session: AsyncSessionDependency):
   return await get_product_by_id_handler(product_id, session)
+
+@router.patch("/{product_id}", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
+async def update_product(product_id: int, product: ProductUpdate, session: AsyncSessionDependency):
+  return await update_product_handler(product_id, product, session)
