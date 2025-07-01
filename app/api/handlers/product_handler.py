@@ -6,7 +6,9 @@
 # 5. MUST NOT contain business logic
 
 from fastapi import HTTPException, status
+from sqlmodel import select
 from app.core.db import AsyncSessionDependency
+from app.models.products.product import Product
 from app.services.product_service import ProductService
 from app.schemas.product import ProductCreate, ProductResponse
 
@@ -14,6 +16,14 @@ async def create_product(product_data: ProductCreate, session: AsyncSessionDepen
   try: 
     # Create the service
     service = ProductService(session)
+
+    # Check if a product already exists with the same name
+    result = await session.execute(select(Product).where(Product.name == product_data.name))
+    existing_product = result.first()
+
+    if existing_product:
+        raise ValueError(f"Product with name {product_data.name} already exists")
+
     # Call business logic 
     product = await service.create_product(product_data)
     # Format HTTP response 
@@ -30,3 +40,13 @@ async def create_product(product_data: ProductCreate, session: AsyncSessionDepen
   except Exception as e: 
     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
   
+async def get_products(session: AsyncSessionDependency):
+  try:
+    service = ProductService(session)
+    products = await service.get_all_products()
+    return products
+  
+  except ValueError as e:
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+  except Exception as e:
+    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
