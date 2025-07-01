@@ -40,7 +40,7 @@ async def create_product(product_data: ProductCreate, session: AsyncSessionDepen
   except Exception as e: 
     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
   
-async def get_products(session: AsyncSessionDependency):
+async def get_products_handler(session: AsyncSessionDependency):
   try:
     service = ProductService(session)
     products = await service.get_all_products()
@@ -50,3 +50,19 @@ async def get_products(session: AsyncSessionDependency):
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
   except Exception as e:
     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+  
+async def get_product_by_id_handler(product_id: int, session: AsyncSessionDependency):
+  try: 
+    service = ProductService(session)
+    product = await service.get_product_by_id(product_id)
+
+    if not product: 
+      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found or does not exist")
+    
+    return product
+  
+  except ValueError as e:
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+  except Exception as e:
+    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    

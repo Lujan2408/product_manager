@@ -7,7 +7,7 @@
 
 from app.core.db import AsyncSessionDependency
 from app.models.products.product import Product
-from app.schemas.product import ProductCreate, ProductResponse
+from app.schemas.product import ProductCreate
 from sqlmodel import select
 
 class ProductService:
@@ -27,3 +27,7 @@ class ProductService:
     async def get_all_products(self):
         result = await self.session.execute(select(Product))
         return result.scalars().all()
+    
+    async def get_product_by_id(self, product_id: int):
+        product_db = await self.session.get(Product, product_id)
+        return product_db
