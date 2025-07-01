@@ -5,7 +5,7 @@
 # 4. Data types transform 
 # 5. MUST NOT interact with the database
 
-from datetime import date
+from datetime import datetime
 from pydantic import BaseModel, Field
 
 # Schema for creating a product (req)
@@ -20,8 +20,8 @@ class ProductResponse(BaseModel):
   name: str
   price: float
   available: bool
-  created_at: date
-  updated_at: date
+  created_at: datetime
+  updated_at: datetime
   # The form_attributes allows the ORM (SQLModel) to convert the data from the database to the data of the response.
   class Config: 
     from_attributes = True
