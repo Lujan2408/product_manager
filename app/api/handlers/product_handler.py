@@ -6,11 +6,11 @@
 # 5. MUST NOT contain business logic
 
 from fastapi import HTTPException, status
-from app.core.db import SessionDependency
+from app.core.db import AsyncSessionDependency
 from app.services.product_service import ProductService
 from app.schemas.product import ProductCreate, ProductResponse
 
-async def create_product(product_data: ProductCreate, session: SessionDependency):
+async def create_product(product_data: ProductCreate, session: AsyncSessionDependency):
   try: 
     # Create the service
     service = ProductService(session)
@@ -23,9 +23,10 @@ async def create_product(product_data: ProductCreate, session: SessionDependency
       "status": "success"
     }
 
-  except Exception as e:
-    # Handle business errors 
+  # Handle business errors 
+  except ValueError as e: 
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-  except Exception as e:
-    # Handle unexpected errors 
+  # Handle unexpected errors 
+  except Exception as e: 
     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+  

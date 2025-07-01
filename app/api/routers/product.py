@@ -10,11 +10,11 @@
 
 from fastapi import APIRouter, status
 from app.api.handlers.product_handler import create_product
-from app.core.db import SessionDependency
+from app.core.db import AsyncSessionDependency
 from app.schemas.product import ProductCreate
 
 router = APIRouter()
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_product_route(product_data: ProductCreate, session: SessionDependency):
+async def create_product_route(product_data: ProductCreate, session: AsyncSessionDependency):
   return await create_product(product_data, session)
