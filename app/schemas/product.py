@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 # Schema for creating a product (req)
 class ProductCreate(BaseModel):
   name: str = Field(min_length=3, max_length=255, description="Product name")
-  price: float = Field(gt=0.0, description="Product price")
+  price: float = Field(gt=0, description="Product price")
   available: bool = Field(default=True, description="Product availability")
 
 # Schema for the response of the product (res)
