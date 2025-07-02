@@ -16,6 +16,12 @@ class ProductService:
         self.session = session
 
     async def create_product(self, product_data: ProductCreate):
+
+        # Check if a product already exists with the same name
+        existing_product = await self.session.execute(select(Product).where(Product.name == product_data.name))
+        if existing_product.first():
+            raise DuplicateProductNameError(f"Product with name {product_data.name} already exists")
+
         # Create the product
         product_data_dict = product_data.model_dump()
         product = Product(**product_data_dict)
@@ -31,6 +37,10 @@ class ProductService:
     
     async def get_product_by_id(self, product_id: int):
         product_db = await self.session.get(Product, product_id)
+
+        if not product_db: 
+            raise ProductNotFoundError("Product not found or does not exist")
+
         return product_db
     
     async def update_product(self, product_id: int, product_data: ProductUpdate):
