@@ -5,7 +5,8 @@
 # 4. Handle errors HTTP 
 # 5. MUST NOT contain business logic
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException, Response, status
+from fastapi.responses import JSONResponse
 from app.core.db import AsyncSessionDependency
 from app.services.product_service import ProductService
 from app.schemas.product import ProductCreate, ProductResponse, ProductUpdate
@@ -66,3 +67,23 @@ async def update_product_handler(product_id: int, product_data: ProductUpdate, s
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
   except Exception as e:
     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Unexpected error ocurred")
+  
+async def delete_product_handler(product_id: int, session: AsyncSessionDependency):
+  try: 
+    service = ProductService(session)
+    await service.delete_product(product_id)
+  
+    return JSONResponse(
+      content={
+        "message": f"Product with ID: {product_id} deleted successfully",
+        "status": "success"
+      },
+      status_code=status.HTTP_200_OK
+    )
+  
+  except ProductNotFoundError as e:
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+  except Exception as e:
+    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Unexpected error ocurred")
+  
+  

@@ -71,3 +71,14 @@ class ProductService:
         await self.session.refresh(product_db)
 
         return product_db
+    
+    async def delete_product(self, product_id: int):
+        product_db = await self.session.get(Product, product_id)
+
+        if not product_db:
+            raise ProductNotFoundError("Product not found or does not exist")
+        
+        self.session.delete(product_db)
+        await self.session.commit()
+
+        return product_db

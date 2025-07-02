@@ -9,8 +9,7 @@
 # 8. Here is where we define the routes for the product router
 
 from fastapi import APIRouter, status
-from app.api.handlers.product_handler import create_product
-from app.api.handlers.product_handler import get_products_handler, get_product_by_id_handler, update_product_handler
+from app.api.handlers.product_handler import create_product, get_products_handler, get_product_by_id_handler, update_product_handler, delete_product_handler
 from app.core.db import AsyncSessionDependency
 from app.schemas.product import ProductCreate, ProductResponse, ProductUpdate
 
@@ -31,3 +30,7 @@ async def get_product_by_id(product_id: int, session: AsyncSessionDependency):
 @router.patch("/{product_id}", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
 async def update_product(product_id: int, product: ProductUpdate, session: AsyncSessionDependency):
   return await update_product_handler(product_id, product, session)
+
+@router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_product(product_id: int, session: AsyncSessionDependency): 
+  return await delete_product_handler(product_id, session)
