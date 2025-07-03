@@ -1,10 +1,11 @@
-import pytest
 import asyncio
 from typing import AsyncGenerator
 from httpx import AsyncClient
+import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+from sqlmodel import SQLModel
 
 # Importar tu aplicación
 from app.main import app
@@ -16,7 +17,7 @@ pytest_plugins = ("pytest_asyncio",)
 # FIXTURES DE EVENT LOOP
 # ============================================================================
 
-@pytest.fixture(scope="function")
+@pytest_asyncio.fixture(scope="function")
 def event_loop():
     """
     Crear un event loop por cada test.
@@ -30,7 +31,7 @@ def event_loop():
 # FIXTURES DE BASE DE DATOS SQLITE
 # ============================================================================
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_engine():
     """
     Crear un motor de base de datos SQLite para testing.
@@ -47,16 +48,16 @@ async def test_engine():
     
     # Crear todas las tablas
     async with engine.begin() as conn:
-        # Aquí necesitarás importar y crear tus tablas
+        # Importar todos los modelos para crear las tablas
         from app.models.products.product import Product
-        await conn.run_sync(Product.metadata.create_all)
+        await conn.run_sync(SQLModel.metadata.create_all)
     
-    yield engine
+    yield engine  # ← DEVOLVER EL ENGINE, NO UN GENERADOR
     
     # Limpiar después de cada test
     await engine.dispose()
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
     """
     Crear una sesión de base de datos para cada test.
@@ -81,7 +82,7 @@ async def test_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
 # FIXTURES DE CLIENTE HTTP
 # ============================================================================
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def client() -> AsyncGenerator[AsyncClient, None]:
     """
     Cliente HTTP para hacer requests a tu API durante tests.
@@ -93,7 +94,7 @@ async def client() -> AsyncGenerator[AsyncClient, None]:
 # FIXTURES DE DATOS DE PRUEBA
 # ============================================================================
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def sample_product_data():
     """
     Datos de ejemplo para crear productos en tests.
@@ -104,7 +105,7 @@ def sample_product_data():
         "price": 99.99
     }
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def sample_product_data_invalid():
     """
     Datos inválidos para probar validaciones.
@@ -114,7 +115,7 @@ def sample_product_data_invalid():
         "price": -10,  # Precio negativo
     }
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def sample_product_data_minimal():
     """
     Datos mínimos para crear un producto.
@@ -128,7 +129,7 @@ def sample_product_data_minimal():
 # FIXTURES DE UTILIDAD
 # ============================================================================
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def mock_time(mocker):
     """
     Mock para fechas y tiempos en tests.
