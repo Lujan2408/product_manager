@@ -1,0 +1,33 @@
+import pytest
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncEngine
+from app.core.db import lifespan, create_db_and_tables, get_async_session, async_engine
+
+class TestDatabaseConnection:
+
+  @pytest.mark.asyncio
+  async def test_database_connection(self, test_engine): 
+    """Test que verifica que la conexión a la base de datos se establece correctamente."""
+    # Verify if the engine exists and its valid
+    assert test_engine is not None
+    assert isinstance(test_engine, AsyncEngine)
+  
+    # Verify if the engine is connected to the database
+    async with test_engine.begin() as connection: 
+      result = await connection.execute(text("SELECT 1"))
+      assert result.scalar() == 1
+
+  @pytest.mark.asyncio
+  async def test_create_db_and_tables(self, test_engine): 
+    """Test que verifica que la base de datos y las tablas se crean correctamente."""
+    # Verify if the tables are created correctly
+    # The tables are created in the fixture test_engine
+
+    # Verify if the tables exists
+    async with test_engine.begin() as connection: 
+      # Get the list of tables
+      result = await connection.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
+      tables = result.scalars().all()
+
+      # Verify if the main tables exists
+      assert "product" in tables # Assuming we have a product table
