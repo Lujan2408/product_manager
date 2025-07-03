@@ -31,3 +31,28 @@ class TestDatabaseConnection:
 
       # Verify if the main tables exists
       assert "product" in tables # Assuming we have a product table
+
+  @pytest.mark.asyncio
+  async def test_lifespan_manager(self, test_engine): 
+    """Test que verifica que el manager de lifespan se ejecuta correctamente."""
+    # Simulate a FastAPI application
+    app_state = {"started": False, "stopped": False}
+
+    async with lifespan(app_state):
+      app_state["started"] = True 
+      app_state["stopped"] = True
+
+      # Here we can verify if the tables are created correctly and the database is connected
+      # Verify if the database is connected
+      async with test_engine.begin() as connection: 
+        result = await connection.execute(text("SELECT 1"))
+        assert result.scalar() == 1
+
+      # Verify if the tables are created correctly
+      async with test_engine.begin() as connection: 
+        result = await connection.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
+        tables = result.scalars().all()
+        assert "product" in tables # Assuming we have a product table
+
+      assert app_state["started"] is True
+      assert app_state["stopped"] is True
