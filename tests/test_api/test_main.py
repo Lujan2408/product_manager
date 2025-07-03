@@ -5,30 +5,30 @@ from app.main import app
 
 class TestMainEndpoint:
     """
-    Clase que agrupa todos los tests relacionados con el endpoint principal.
-    En pytest, las clases que empiezan con 'Test' se ejecutan automáticamente.
+    Class that groups all tests related to the main endpoint.
+    In pytest, classes that start with 'Test' are automatically executed.
     """
     
-    @pytest.mark.asyncio  # ← MARCA ASÍNCRONA
+    @pytest.mark.asyncio  # ← ASYNC MARKER
     async def test_root_endpoint_returns_welcome_message(self):
         """
-        Test que verifica que el endpoint raíz devuelve el mensaje de bienvenida correcto.
+        Test that verifies the root endpoint returns the correct welcome message.
         """
         
-        # ARRANGE (Preparar) - Configurar el entorno de prueba
-        # AsyncClient es un cliente HTTP que simula requests reales a tu API
-        transport = ASGITransport(app=app)  # ← Usar ASGITransport en lugar de AsyncClient para evitar el error
+        # ARRANGE (Prepare) - Set up the test environment
+        # AsyncClient is an HTTP client that simulates real requests to your API
+        transport = ASGITransport(app=app)  # ← Use ASGITransport instead of AsyncClient to avoid the error
         async with AsyncClient(transport=transport, base_url="http://test") as client:
             
-            # ACT (Actuar) - Ejecutar la acción que queremos probar
-            # Hacemos un GET request al endpoint "/"
+            # ACT (Act) - Execute the action we want to test
+            # Make a GET request to the "/" endpoint
             response = await client.get("/")
             
-            # ASSERT (Verificar) - Comprobar que el resultado es el esperado
-            # Verificamos que el status code sea 200 (OK)
+            # ASSERT (Verify) - Check that the result is as expected
+            # Verify that the status code is 200 (OK)
             assert response.status_code == 200
             
-            # Verificamos que el JSON de respuesta tenga la estructura correcta
+            # Verify that the response JSON has the correct structure
             data = response.json()
             assert "message" in data
             assert "status" in data
@@ -38,21 +38,21 @@ class TestMainEndpoint:
     @pytest.mark.asyncio
     async def test_root_endpoint_response_structure(self):
         """
-        Test que verifica la estructura completa de la respuesta del endpoint raíz.
-        Este test es más específico y verifica cada campo individualmente.
+        Test that verifies the complete structure of the root endpoint response.
+        This test is more specific and verifies each field individually.
         """
         
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as client:
             response = await client.get("/")
             
-            # Verificamos que la respuesta sea exitosa
+            # Verify that the response is successful
             assert response.status_code == 200
             
-            # Verificamos que el Content-Type sea application/json
+            # Verify that the Content-Type is application/json
             assert response.headers["content-type"] == "application/json"
             
-            # Verificamos la estructura exacta del JSON
+            # Verify the exact structure of the JSON
             expected_data = {
                 "message": "Welcome to Product Manager API",
                 "status": "running"
@@ -62,65 +62,65 @@ class TestMainEndpoint:
     @pytest.mark.asyncio
     async def test_root_endpoint_http_methods(self):
         """
-        Test que verifica que solo el método GET funciona en el endpoint raíz.
-        Los otros métodos HTTP deberían devolver 405 Method Not Allowed.
+        Test that verifies only the GET method works on the root endpoint.
+        Other HTTP methods should return 405 Method Not Allowed.
         """
         
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as client:
             
-            # GET debería funcionar (200 OK)
+            # GET should work (200 OK)
             response = await client.get("/")
             assert response.status_code == 200
             
-            # POST no debería funcionar (405 Method Not Allowed)
+            # POST should not work (405 Method Not Allowed)
             response = await client.post("/")
             assert response.status_code == 405
             
-            # PUT no debería funcionar (405 Method Not Allowed)
+            # PUT should not work (405 Method Not Allowed)
             response = await client.put("/")
             assert response.status_code == 405
             
-            # DELETE no debería funcionar (405 Method Not Allowed)
+            # DELETE should not work (405 Method Not Allowed)
             response = await client.delete("/")
             assert response.status_code == 405
 
 
 # ============================================================================
-# EXPLICACIÓN DE CONCEPTOS CLAVE:
+# KEY CONCEPTS EXPLANATION:
 # ============================================================================
 
 """
 1. @pytest.mark.asyncio:
-   - Esta es una "marca" (marker) de pytest
-   - Le dice a pytest que este test es asíncrono
-   - Sin esto, pytest no sabría cómo ejecutar funciones async
+   - This is a pytest "marker"
+   - Tells pytest that this test is asynchronous
+   - Without this, pytest wouldn't know how to execute async functions
 
 2. async def test_...():
-   - async: Indica que la función es asíncrona
-   - def: Define una función de test
-   - test_...: pytest busca automáticamente funciones que empiecen con "test_"
+   - async: Indicates that the function is asynchronous
+   - def: Defines a test function
+   - test_...: pytest automatically looks for functions that start with "test_"
 
 3. AsyncClient:
-   - Es un cliente HTTP que simula requests reales
-   - Permite hacer requests a tu API sin necesidad de un servidor real
-   - Es más rápido que usar requests reales
+   - It's an HTTP client that simulates real requests
+   - Allows making requests to your API without needing a real server
+   - It's faster than using real requests
 
 4. assert:
-   - Es la palabra clave para hacer verificaciones
-   - Si la condición es False, el test falla
-   - Si es True, el test pasa
+   - It's the keyword for making verifications
+   - If the condition is False, the test fails
+   - If it's True, the test passes
 
 5. response.status_code:
-   - Código de estado HTTP (200=OK, 404=Not Found, etc.)
-   - Es la forma estándar de verificar si un request fue exitoso
+   - HTTP status code (200=OK, 404=Not Found, etc.)
+   - It's the standard way to verify if a request was successful
 
 6. response.json():
-   - Convierte la respuesta JSON en un diccionario de Python
-   - Permite verificar el contenido de la respuesta
+   - Converts the JSON response into a Python dictionary
+   - Allows verifying the content of the response
 
-7. Patrón AAA (Arrange-Act-Assert):
-   - Arrange: Preparar el entorno de prueba
-   - Act: Ejecutar la acción que queremos probar
-   - Assert: Verificar que el resultado es el esperado
+7. AAA Pattern (Arrange-Act-Assert):
+   - Arrange: Prepare the test environment
+   - Act: Execute the action we want to test
+   - Assert: Verify that the result is as expected
 """ 
