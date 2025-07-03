@@ -1,6 +1,6 @@
 import asyncio
 from typing import AsyncGenerator
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
@@ -91,7 +91,8 @@ async def client() -> AsyncGenerator[AsyncClient, None]:
     """
     HTTP client to make requests to the API during tests.
     """
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
 
 # ============================================================================
