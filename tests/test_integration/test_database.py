@@ -10,7 +10,7 @@ class TestDatabaseConnection:
 
   @pytest.mark.asyncio
   async def test_database_connection(self, test_engine): 
-    """Test que verifica que la conexión a la base de datos se establece correctamente."""
+    """Test that verifies the database connection is established correctly."""
     # Verify if the engine exists and its valid
     assert test_engine is not None
     assert isinstance(test_engine, AsyncEngine)
@@ -22,7 +22,7 @@ class TestDatabaseConnection:
 
   @pytest.mark.asyncio
   async def test_create_db_and_tables(self, test_engine): 
-    """Test que verifica que la base de datos y las tablas se crean correctamente."""
+    """Test that verifies the database and tables are created correctly."""
     # Verify if the tables are created correctly
     # The tables are created in the fixture test_engine
 
@@ -37,7 +37,7 @@ class TestDatabaseConnection:
 
   @pytest.mark.asyncio
   async def test_lifespan_manager(self, test_engine): 
-    """Test que verifica que el manager de lifespan se ejecuta correctamente."""
+    """Test that verifies the lifespan manager executes correctly."""
     # Simulate a FastAPI application
     app_state = {"started": False, "stopped": False}
 
@@ -62,7 +62,7 @@ class TestDatabaseConnection:
 
   @pytest.mark.asyncio
   async def test_dependency_override_with_session(self, test_session): 
-    """Test que verifica que la session de base de datos se obtiene correctamente."""
+    """Test that verifies the database session is obtained correctly."""
 
     # Temporary override the session dependency
     app.dependency_overrides[get_async_session] = lambda: test_session
@@ -78,27 +78,27 @@ class TestDatabaseConnection:
   @pytest.mark.asyncio
   async def test_full_database_workflow(self, test_session):
       """
-      Test de integración completa que valida:
-      - inyección de sesión
-      - creación de tabla
-      - inserción y consulta real
+      Complete integration test that validates:
+      - session injection
+      - table creation
+      - real insertion and query
       """
 
-      # Override de la dependencia de sesión con una sesión de prueba
+      # Override the session dependency with a test session
       app.dependency_overrides[get_async_session] = lambda: test_session
 
-      # Insertar manualmente un producto usando SQLAlchemy (no endpoint)
+      # Manually insert a product using SQLAlchemy (not endpoint)
       new_product = Product(name="DB Test Product", price=123.45)
       test_session.add(new_product)
-      # No hacer commit explícito - el fixture se encarga del rollback
-      await test_session.flush()  # Solo flush para obtener el ID
+      # Don't make explicit commit - the fixture handles the rollback
+      await test_session.flush()  # Only flush to get the ID
       await test_session.refresh(new_product)
 
-      # 🔍 Consultar el producto para verificar que existe
+      # Query the product to verify it exists
       result = await test_session.get(Product, new_product.id)
       assert result is not None
       assert result.name == "DB Test Product"
       assert result.price == 123.45
 
-      # 🧼 Limpiar overrides después del test
+      # Clean up overrides after the test
       app.dependency_overrides.clear()
