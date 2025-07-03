@@ -69,14 +69,18 @@ async def test_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
     )
     
     async with async_session() as session:
-        # Iniciar transacción anidada para rollback automático
-        transaction = await session.begin_nested()
+        # Iniciar transacción para rollback automático
+        await session.begin()
         
         yield session
         
-        # Rollback automático después de cada test
-        await transaction.rollback()
-        await session.rollback()
+        # Rollback automático después de cada test (solo si la transacción está activa)
+        try:
+            if session.in_transaction():
+                await session.rollback()
+        except Exception:
+            # Si ya está cerrada, no hacer nada
+            pass
 
 # ============================================================================
 # FIXTURES DE CLIENTE HTTP

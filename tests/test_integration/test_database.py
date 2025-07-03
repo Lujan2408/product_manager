@@ -4,6 +4,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
 from app.main import app
 from app.core.db import lifespan, get_async_session
+from app.models.products.product import Product
 
 class TestDatabaseConnection:
 
@@ -73,3 +74,31 @@ class TestDatabaseConnection:
       assert response.status_code == 200
       data = response.json()
       assert data["message"] == "Welcome to Product Manager API"
+
+  @pytest.mark.asyncio
+  async def test_full_database_workflow(self, test_session):
+      """
+      Test de integración completa que valida:
+      - inyección de sesión
+      - creación de tabla
+      - inserción y consulta real
+      """
+
+      # Override de la dependencia de sesión con una sesión de prueba
+      app.dependency_overrides[get_async_session] = lambda: test_session
+
+      # Insertar manualmente un producto usando SQLAlchemy (no endpoint)
+      new_product = Product(name="DB Test Product", price=123.45)
+      test_session.add(new_product)
+      # No hacer commit explícito - el fixture se encarga del rollback
+      await test_session.flush()  # Solo flush para obtener el ID
+      await test_session.refresh(new_product)
+
+      # 🔍 Consultar el producto para verificar que existe
+      result = await test_session.get(Product, new_product.id)
+      assert result is not None
+      assert result.name == "DB Test Product"
+      assert result.price == 123.45
+
+      # 🧼 Limpiar overrides después del test
+      app.dependency_overrides.clear()
