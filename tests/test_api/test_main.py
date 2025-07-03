@@ -13,8 +13,6 @@ class TestMainEndpoint:
     async def test_root_endpoint_returns_welcome_message(self):
         """
         Test que verifica que el endpoint raíz devuelve el mensaje de bienvenida correcto.
-        
-        NOMBRE DEL TEST: Debe ser descriptivo y explicar qué está probando
         """
         
         # ARRANGE (Preparar) - Configurar el entorno de prueba
