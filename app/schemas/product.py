@@ -6,7 +6,7 @@
 # 5. MUST NOT interact with the database
 
 from datetime import datetime
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 from typing import Optional
 
 # Schema for creating a product (req)
@@ -24,8 +24,7 @@ class ProductResponse(BaseModel):
   created_at: datetime
   updated_at: datetime
   # The form_attributes allows the ORM (SQLModel) to convert the data from the database to the data of the response.
-  class Config: 
-    from_attributes = True
+  model_config = ConfigDict(from_attributes=True)
 
 class ProductUpdate(BaseModel):
   name: Optional[str] = Field(default=None, min_length=1, max_length=255)
