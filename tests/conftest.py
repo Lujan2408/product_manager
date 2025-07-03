@@ -7,20 +7,20 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from sqlmodel import SQLModel
 
-# Importar tu aplicación
+# Import your application
 from app.main import app
 
-# Configurar pytest-asyncio
+# Configure pytest-asyncio
 pytest_plugins = ("pytest_asyncio",)
 
 # ============================================================================
-# FIXTURES DE EVENT LOOP
+# EVENT LOOP FIXTURES
 # ============================================================================
 
 @pytest_asyncio.fixture(scope="function")
 def event_loop():
     """
-    Crear un event loop por cada test.
+    Create an event loop for each test.
     """
     policy = asyncio.get_event_loop_policy()
     loop = policy.new_event_loop()
@@ -28,39 +28,39 @@ def event_loop():
     loop.close()
 
 # ============================================================================
-# FIXTURES DE BASE DE DATOS SQLITE
+# SQLITE DATABASE FIXTURES
 # ============================================================================
 
 @pytest_asyncio.fixture
 async def test_engine():
     """
-    Crear un motor de base de datos SQLite para testing.
-    Usa SQLite en memoria para máxima velocidad.
+    Create a SQLite database engine for testing.
+    Uses in-memory SQLite for maximum speed.
     """
     test_database_url = "sqlite+aiosqlite:///:memory:"
     
     engine = create_async_engine(
         test_database_url,
-        echo=False,  # No mostrar SQL en consola durante tests
-        poolclass=StaticPool,  # Pool estático para tests
+        echo=False,  # Don't show SQL in console during tests
+        poolclass=StaticPool,  # Static pool for tests
         connect_args={"check_same_thread": False}
     )
     
-    # Crear todas las tablas
+    # Create all tables
     async with engine.begin() as conn:
-        # Importar todos los modelos para crear las tablas
+        # Import all models to create tables
         from app.models.products.product import Product
         await conn.run_sync(SQLModel.metadata.create_all)
     
-    yield engine  # ← DEVOLVER EL ENGINE, NO UN GENERADOR
+    yield engine  # ← RETURN THE ENGINE, NOT A GENERATOR
     
-    # Limpiar después de cada test
+    # Clean up after each test
     await engine.dispose()
 
 @pytest_asyncio.fixture
 async def test_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
     """
-    Crear una sesión de base de datos para cada test.
+    Create a database session for each test.
     """
     async_session = sessionmaker(
         test_engine,
@@ -69,73 +69,75 @@ async def test_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
     )
     
     async with async_session() as session:
-        # Iniciar transacción para rollback automático
+        # Start transaction for automatic rollback
         await session.begin()
         
         yield session
         
-        # Rollback automático después de cada test (solo si la transacción está activa)
+        # Automatic rollback after each test (only if transaction is active)
         try:
             if session.in_transaction():
                 await session.rollback()
         except Exception:
-            # Si ya está cerrada, no hacer nada
+            # If already closed, do nothing
             pass
 
 # ============================================================================
-# FIXTURES DE CLIENTE HTTP
+# HTTP CLIENT FIXTURES
 # ============================================================================
 
 @pytest_asyncio.fixture
 async def client() -> AsyncGenerator[AsyncClient, None]:
     """
-    Cliente HTTP para hacer requests a tu API durante tests.
+    HTTP client to make requests to the API during tests.
     """
     async with AsyncClient(app=app, base_url="http://test") as ac:
         yield ac
 
 # ============================================================================
-# FIXTURES DE DATOS DE PRUEBA
+# TEST DATA FIXTURES
 # ============================================================================
 
 @pytest_asyncio.fixture
 def sample_product_data():
     """
-    Datos de ejemplo para crear productos en tests.
+    Sample data to create products in tests.
     """
     return {
         "name": "Test Product",
-        "description": "This is a test product",
-        "price": 99.99
+        "price": 99.99,
+        "available": True
     }
 
 @pytest_asyncio.fixture
 def sample_product_data_invalid():
     """
-    Datos inválidos para probar validaciones.
+    Invalid data to test validations.
     """
     return {
-        "name": "",  # Nombre vacío
-        "price": -10,  # Precio negativo
+        "name": "",  # Empty name
+        "price": -10,  # Negative price
+        "available": False
     }
 
 @pytest_asyncio.fixture
 def sample_product_data_minimal():
     """
-    Datos mínimos para crear un producto.
+    Minimal data to create a product.
     """
     return {
         "name": "Minimal Product",
-        "price": 50.0
+        "price": 50.0,
+        "available": True
     }
 
 # ============================================================================
-# FIXTURES DE UTILIDAD
+# UTILITY FIXTURES
 # ============================================================================
 
 @pytest_asyncio.fixture
 def mock_time(mocker):
     """
-    Mock para fechas y tiempos en tests.
+    Mock for dates and times in tests.
     """
     mocker.patch("app.utils.format_date.datetime")
