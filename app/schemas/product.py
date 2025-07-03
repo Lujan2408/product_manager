@@ -33,6 +33,9 @@ class ProductUpdate(BaseModel):
 
   @field_validator("name")
   def name_with_no_blank_spaces(cls, v):
-    if v is not None and v.strip() == "":
-      raise ValueError("Name cannot be blank")
+    if v is not None:
+      v = v.strip()
+      if v == "":
+        raise ValueError("Name cannot be blank")
+      return v
     return v
