@@ -10,6 +10,7 @@ from app.models.products.product import Product
 from app.schemas.product import ProductCreate, ProductUpdate
 from app.errors.product_errors import ProductNotFoundError, DuplicateProductNameError, NoFieldsToUpdateError
 from sqlmodel import select
+from app.helpers.format_date import now_without_microseconds
 
 class ProductService:
     def __init__(self, session: AsyncSessionDependency):
@@ -65,7 +66,22 @@ class ProductService:
             if existing_product:
                 raise DuplicateProductNameError(f"Product with name {product_data.name} already exists")
 
-        product_db.sqlmodel_update(product_data)
+        # Update only the fields that are provided (not None)
+        update_data = {}
+        if product_data.name is not None:
+            update_data["name"] = product_data.name
+        if product_data.price is not None:
+            update_data["price"] = product_data.price
+        if product_data.available is not None:
+            update_data["available"] = product_data.available
+        
+        # Update the product with only the provided fields
+        for field, value in update_data.items():
+            setattr(product_db, field, value)
+        
+        # Update the timestamp manually
+        product_db.updated_at = now_without_microseconds()
+        
         self.session.add(product_db)
         await self.session.commit()
         await self.session.refresh(product_db)
@@ -78,7 +94,7 @@ class ProductService:
         if not product_db:
             raise ProductNotFoundError("Product not found or does not exist")
         
-        self.session.delete(product_db)
+        await self.session.delete(product_db)
         await self.session.commit()
 
         return product_db
