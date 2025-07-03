@@ -1,7 +1,9 @@
+from httpx import ASGITransport, AsyncClient
 import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
-from app.core.db import lifespan, create_db_and_tables, get_async_session, async_engine
+from app.main import app
+from app.core.db import lifespan, get_async_session
 
 class TestDatabaseConnection:
 
@@ -56,3 +58,18 @@ class TestDatabaseConnection:
 
       assert app_state["started"] is True
       assert app_state["stopped"] is True
+
+  @pytest.mark.asyncio
+  async def test_dependency_override_with_session(self, test_session): 
+    """Test que verifica que la session de base de datos se obtiene correctamente."""
+
+    # Temporary override the session dependency
+    app.dependency_overrides[get_async_session] = lambda: test_session
+
+    # Test client
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client: 
+      response = await client.get("/")
+      assert response.status_code == 200
+      data = response.json()
+      assert data["message"] == "Welcome to Product Manager API"
